@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Colorillo</title>
+    <style>
+        div.gallery {
+            border: 1px solid #ccc;
+            height: 100%;
+        }
+
+        div.gallery:hover {
+            border: 1px solid #777;
+        }
+
+        div.gallery img {
+            width: 100%;
+            height: auto;
+        }
+
+        div.desc {
+            padding: 15px;
+            text-align: center;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .responsive {
+            padding: 10px 10px;
+            float: left;
+            width: 33%;
+            min-height: 650px;
+        }
+
+        @media only screen and (max-width: 1600px){
+            .responsive {
+                width: 49.99999%;
+                margin: 6px 0;
+                min-height: 480px;
+            }
+        }
+
+        @media only screen and (max-width: 800px){
+            .responsive {
+                width: 100%;
+                min-height: 0;
+            }
+        }
+
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <div class="clearfix"></div>
+</body>
+    <script>
+    (function () {
+        function readTextFile(file, callback) {
+            var rawFile = new XMLHttpRequest();
+            rawFile.overrideMimeType("application/json");
+            rawFile.open("GET", file, true);
+            rawFile.onreadystatechange = function() {
+                if (rawFile.readyState === 4 && rawFile.status == "200") {
+                    callback(rawFile.responseText);
+                }
+            }
+            rawFile.send(null);
+        }
+
+        var images = readTextFile('images.json', (data) => {
+            var images = JSON.parse(data);
+            var container = document.getElementById('container');
+            images.forEach((image) => {
+                var template = document.createElement('template');
+                var movieTemplate = !!image.movie ? `<div class="desc"><a href="${image.movie}">${image.movie}</a></div>`: "";
+                var templateString = `
+                <div class="responsive">
+                  <div class="gallery">
+                    <a href="${image.url}">
+                      <img src="${image.url}" alt="${image.name}">
+                    </a>
+                    <div class="desc">${image.name} <br />Uploaded: ${image.uploaded}</div>
+                    ${movieTemplate}
+                  </div>
+                </div>`
+                template.innerHTML = templateString;
+                var clone = document.importNode(template.content, true);
+                container.appendChild(clone);
+            });
+        });
+    }());
+    </script>
+</html>

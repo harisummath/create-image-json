@@ -2,8 +2,6 @@
 
 const fs = require('fs');
 
-const acceptedExtensions = ['png', 'mp4']
-
 fs.readdir(__dirname, (err, files) => {
     if (err) {
         console.log(err);
@@ -11,26 +9,32 @@ fs.readdir(__dirname, (err, files) => {
     }
     let promises = [];
     let jsonFiles = [];
-    files.forEach((fileName) => {
+    let images = files.filter((fileName) => {
+        let extension = fileName.substr(fileName.lastIndexOf('.')+1);
+        return extension === 'png';
+    });
+    let movies = files.filter((fileName) => {
+        let extension = fileName.substr(fileName.lastIndexOf('.')+1);
+        return extension === 'mp4';
+    });
+    images.forEach((fileName) => {
         let promise = new Promise((resolve, reject) => {
             fs.stat(fileName, (err, stats) => {
                 if (err) {
                     reject(err);
                     return;
                 }
-                if (!stats.isFile()) {
-                    resolve();
-                    return;
-                }
 
-                let extension = fileName.substr(fileName.lastIndexOf('.')+1);
-                if (acceptedExtensions.indexOf(extension) < 0) {
-                    resolve();
-                    return;
-                }
-
-                let file = { name: fileName, url: fileName, size: stats.size, uploaded: stats.birthtime };
-                jsonFiles.push(file);
+                let name = fileName.substring(0, fileName.length - 4);
+                let hasMovie = movies.some((movie) => { return movie.startsWith(name); });
+                let image = {
+                    name: name,
+                    url: fileName,
+                    size: stats.size,
+                    uploaded: stats.birthtime,
+                    movie: hasMovie ? name + '.mp4': null
+                };
+                jsonFiles.push(image);
 
                 resolve();
             });
